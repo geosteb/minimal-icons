@@ -638,12 +638,22 @@
             let containerFill = (contFillMode === 'solid') ? contFillColor : 'none';
             let containerStroke = (contBorderWidth > 0) ? contBorderColor : 'none';
 
+            // --- LÓGICA DE GEOMETRÍA: FACTOR DE FORMA ---
+            // Esto ajusta el "lienzo disponible" según la forma para que el icono nunca toque bordes
+            let shapeConstraintFactor = 1.0;
+            
             if (shape !== 'none') {
                 if (shape === 'circle') {
+                    // El cuadrado inscrito en un círculo es D / sqrt(2) ≈ 0.707
+                    // Usamos 0.70 para asegurar un pequeño margen natural
+                    shapeConstraintFactor = 0.70;
                     masterSvg += `<circle cx="${size/2}" cy="${size/2}" r="${(size - contBorderWidth)/2}" fill="${containerFill}" stroke="${containerStroke}" stroke-width="${contBorderWidth}" />`;
                 } else if (shape === 'square') {
+                    shapeConstraintFactor = 1.0; // En cuadrado cabe completo
                     masterSvg += `<rect x="${cPad}" y="${cPad}" width="${cSize}" height="${cSize}" fill="${containerFill}" stroke="${containerStroke}" stroke-width="${contBorderWidth}" />`;
                 } else if (shape === 'rounded') {
+                    // En rounded square perdemos un poco de esquina
+                    shapeConstraintFactor = 0.85; 
                     masterSvg += `<rect x="${cPad}" y="${cPad}" width="${cSize}" height="${cSize}" rx="${size*0.2}" ry="${size*0.2}" fill="${containerFill}" stroke="${containerStroke}" stroke-width="${contBorderWidth}" />`;
                 }
             }
@@ -659,9 +669,13 @@
                 child.style.stroke = '';
             });
 
-            // LÓGICA DE CENTRADO Y ESCALADO
+            // LÓGICA DE CENTRADO Y ESCALADO (Actualizada con Shape Factor)
             const maxAvailableSize = size - (contBorderWidth * 2);
-            const iconDim = maxAvailableSize * iconScale;
+            
+            // Aquí aplicamos la restricción geométrica ANTES de aplicar el slider del usuario
+            const safeGeomSize = maxAvailableSize * shapeConstraintFactor;
+            
+            const iconDim = safeGeomSize * iconScale;
             const offset = (size - iconDim) / 2;
             
             iconSvg.setAttribute('width', iconDim);
