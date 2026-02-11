@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINIMAL ICONS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #0f0c0b;       
+            --bg-panel: #1a1614;      
+            --border: #3d342b;        
+            --accent: #cd7f32;        
+            --accent-glow: rgba(205, 127, 50, 0.15);
+            --text-main: #e0d8cc;     
+            --text-muted: #8a7f75;
+            --input-bg: #080606;
+            --danger: #ff4444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden; 
+        }
+
+        header {
+            width: 100%;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-panel);
+            height: 70px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.4rem;
+        }
+
+        h1 span { color: var(--accent); }
+
+        .signature {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 500;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 640px; 
+            gap: 30px;
+            width: 100%;
+            max-width: 1800px;
+            height: calc(100vh - 70px);
+            padding: 30px 40px;
+            overflow: hidden;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .canvas-area {
+            flex: 1;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-color: #120f0e;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+            overflow: hidden;
+        }
+
+        .canvas-area svg {
+            filter: drop-shadow(0 0 15px rgba(0,0,0,0.6));
+            max-width: 80% !important; 
+            max-height: 80% !important;
+            width: auto !important;
+            height: auto !important;
+            transition: all 0.3s ease;
+        }
+
+        .results-strip {
+            flex: 0 0 90px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center; 
+            overflow: hidden; 
+        }
+
+        .result-item {
+            flex: 0 0 65px;
+            height: 65px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.6;
+        }
+
+        .result-item:hover, .result-item.active {
+            border-color: var(--accent);
+            opacity: 1;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .result-item svg { width: 28px; height: 28px; stroke: var(--text-main); fill: none; }
+
+        .controls-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .control-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .control-card::-webkit-scrollbar { display: none; }
+
+        .section-title {
+            font-family: 'Rajdhani'; font-weight: 700; color: var(--text-muted); 
+            font-size: 0.75rem; letter-spacing: 1px; margin-top: 5px; margin-bottom: 0px;
+            border-bottom: 1px solid var(--border); padding-bottom: 4px;
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 6px; }
+        .control-row { display: flex; gap: 10px; width: 100%; }
+        .control-row > div { flex: 1; }
+
+        label {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .size-indicator {
+            float: right;
+            color: var(--text-main);
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        input[type="text"], select {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px;
+            font-family: 'Inter', monospace;
+            border-radius: 2px;
+            outline: none;
+            font-size: 0.8rem;
+            width: 100%;
+        }
+
+        /* Estilo para el input file y botón reset */
+        .file-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px;
+            font-family: 'Rajdhani', monospace;
+            border-radius: 2px;
+            outline: none;
+            font-size: 0.7rem;
+            width: 100%;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 4px 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .btn-clear-upload {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 2px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            display: none; /* Oculto por defecto */
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-clear-upload:hover { opacity: 0.8; }
+
+        .color-wrapper {
+            position: relative; height: 32px; border: 1px solid var(--border);
+            background: var(--input-bg); border-radius: 2px; display: flex; align-items: center;
+            padding: 0 8px; cursor: pointer; transition: border-color 0.2s; width: 100%;
+        }
+        
+        input[type="color"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+        
+        .color-preview {
+            width: 16px; height: 16px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .color-code { font-family: monospace; font-size: 0.75rem; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; }
+
+        input[type="range"] {
+            -webkit-appearance: none; width: 100%; height: 4px;
+            background: #333; border-radius: 2px; margin: 8px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 12px; height: 12px;
+            background: var(--accent); cursor: pointer;
+            border: 2px solid var(--bg-dark);
+        }
+
+        .btn-download {
+            background: var(--accent); color: #000;
+            font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1rem;
+            text-transform: uppercase; padding: 15px; border: none; border-radius: 2px;
+            cursor: pointer; margin-top: auto; transition: all 0.2s; letter-spacing: 2px;
+            width: 100%;
+        }
+        .btn-download:hover { background: #fff; box-shadow: 0 0 20px var(--accent); }
+
+        .bottom-link {
+            position: absolute; bottom: 10px; right: 40px;
+            font-size: 0.7rem; color: var(--text-muted);
+            text-decoration: none; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4;
+            transition: opacity 0.3s;
+            z-index: 5;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; overflow-y: auto; }
+            .workspace { grid-template-columns: 1fr; height: auto; padding: 15px; padding-bottom: 80px; }
+            .canvas-area { height: 300px; }
+            .controls-wrapper { display: flex; flex-direction: column; height: auto; }
+            .results-strip { overflow-x: auto; justify-content: flex-start; }
+            .bottom-link { position: relative; bottom: auto; right: auto; text-align: center; margin-top: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Minimal <span>Icons</span></h1>
+        <div class="signature">DESIGNED BY GEOSTEB</div>
+    </header>
+
+    <div class="workspace">
+        <div class="left-column">
+            <div class="canvas-area" id="canvas-container">
+                <span style="opacity: 0.2; font-family: 'Rajdhani'; text-transform: uppercase; letter-spacing: 2px;">Preview Area</span>
+            </div>
+            <div class="results-strip" id="results-container"></div>
+        </div>
+
+        <div class="controls-wrapper">
+            <div class="control-card">
+                <div class="section-title">ICON SETTINGS</div>
+                <div class="control-group">
+                    <label>Search Asset</label>
+                    <input type="text" id="icon-name" placeholder="water, sports, gym..." value="engineer" autocomplete="off">
+                </div>
+                
+                <div class="control-group" style="border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px;">
+                    <label>OR UPLOAD IMAGE (PNG/JPG TO SVG)</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="upload-img" accept="image/*">
+                        <button class="btn-clear-upload" id="clear-upload" title="Remove Image">✕</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Icon Color</label>
+                    <div class="color-wrapper">
+                        <div class="color-preview" id="icon-color-disp"></div>
+                        <span class="color-code" id="icon-color-code"></span>
+                        <input type="color" id="icon-color" value="#e0d8cc">
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label>Fill</label>
+                        <select id="icon-fill">
+                            <option value="outline">Outline</option>
+                            <option value="filled">Filled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Stroke Width</label>
+                    <input type="range" id="icon-stroke" min="0.5" max="4" step="0.1" value="1.5">
+                </div>
+            </div>
+
+            <div class="control-card">
+                <div class="section-title">CONTAINER SETTINGS</div>
+                <div class="control-group">
+                    <label>Shape</label>
+                    <select id="icon-shape">
+                        <option value="none">None</option>
+                        <option value="circle">Circle</option>
+                        <option value="square">Square</option>
+                        <option value="rounded">Rounded Square</option>
+                    </select>
+                </div>
+                <div id="container-controls" style="display: flex; flex-direction: column; gap: 10px; transition: opacity 0.3s;">
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label>Fill</label>
+                            <div class="color-wrapper">
+                                <div class="color-preview" id="cont-fill-disp"></div>
+                                <input type="color" id="cont-fill-color" value="#cd7f32">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label>Border</label>
+                            <div class="color-wrapper">
+                                <div class="color-preview" id="cont-border-disp"></div>
+                                <input type="color" id="cont-border-color" value="#cd7f32">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                         <div class="control-group">
+                            <label>Opacity</label>
+                            <select id="cont-fill-mode">
+                                <option value="solid">Solid</option>
+                                <option value="transparent">Transparent</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Width</label>
+                            <input type="range" id="cont-border-width" min="0" max="10" step="0.5" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 20px;">EXPORT SETTINGS</div>
+                <div class="control-group">
+                    <label>Size <span class="size-indicator" id="size-val">512px</span></label>
+                    <input type="range" id="icon-size" min="64" max="2048" value="512">
+                </div>
+                <div class="control-group">
+                    <label>Format</label>
+                    <select id="file-format">
+                        <option value="svg">SVG (Vector)</option>
+                        <option value="png">PNG</option>
+                        <option value="jpg">JPG</option>
+                        <option value="webp">WebP</option>
+                    </select>
+                </div>
+                <button class="btn-download" onclick="downloadAsset()">DOWNLOAD</button>
+            </div>
+        </div>
+    </div>
+
+    <a href="https://github.com/geosteb" target="_blank" class="bottom-link">GO TO MAIN GEOSTEB REPOSITORY</a>
+
+    <script>
+        const inputs = {
+            name: document.getElementById('icon-name'),
+            upload: document.getElementById('upload-img'),
+            clearUploadBtn: document.getElementById('clear-upload'),
+            iconColor: document.getElementById('icon-color'),
+            iconFill: document.getElementById('icon-fill'),
+            iconStroke: document.getElementById('icon-stroke'),
+            shape: document.getElementById('icon-shape'),
+            contFillColor: document.getElementById('cont-fill-color'),
+            contBorderColor: document.getElementById('cont-border-color'),
+            contFillMode: document.getElementById('cont-fill-mode'),
+            contBorderWidth: document.getElementById('cont-border-width'),
+            size: document.getElementById('icon-size'),
+            format: document.getElementById('file-format')
+        };
+        
+        const canvas = document.getElementById('canvas-container');
+        const resultsStrip = document.getElementById('results-container');
+        let selectedSvgContent = '';
+        let abortController = null;
+
+        // --- SISTEMA DE VECTORIZACIÓN DE IMÁGENES ---
+        inputs.upload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Mostrar el botón de borrar
+            inputs.clearUploadBtn.style.display = 'flex';
+
+            canvas.innerHTML = '<span style="font-family:\'Rajdhani\'; opacity:0.5; animation: blink 1s infinite;">VECTORIZING...</span>';
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const options = {
+                    ltres: 0.1, qtres: 0.1, scale: 1, strokewidth: 0, 
+                    numberofcolors: 2, colorsampling: 0,
+                    pal: [{r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}] 
+                };
+
+                // Dentro del listener de inputs.upload
+ImageTracer.imageToSVG(event.target.result, function(svgstr) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgstr, "image/svg+xml");
+    const svg = doc.querySelector('svg');
+
+    // Forzamos el centrado absoluto eliminando restricciones de origen
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    // Si la librería mete estilos de ancho/alto fijos en el estilo, los volamos
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+
+    svg.querySelectorAll('path').forEach(p => {
+        const fill = p.getAttribute('fill');
+        if (fill === 'rgb(255,255,255)' || fill === '#ffffff') {
+            p.setAttribute('fill', 'none');
+        } else {
+            p.setAttribute('fill', 'currentColor');
+        }
+    });
+
+    selectedSvgContent = svg.outerHTML;
+    updateMainCanvas();
+}, options);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // --- SISTEMA DE BORRADO DE IMAGEN ---
+        inputs.clearUploadBtn.addEventListener('click', function() {
+            inputs.upload.value = ''; // Reset input file
+            inputs.clearUploadBtn.style.display = 'none'; // Ocultar boton X
+            selectedSvgContent = ''; // Limpiar SVG
+            
+            // Volver a estado inicial o buscar algo por defecto
+            inputs.name.value = 'engineer';
+            performSearch();
+        });
+
+        const synonyms = {
+            'engineer': ['wrench', 'hammer', 'hard-hat', 'cpu', 'settings', 'tool'],
+            'water': ['droplet', 'waves', 'cloud-rain'],
+            'sports': ['dumbbell', 'activity', 'trophy', 'target'],
+            'gym': ['dumbbell', 'heart-pulse', 'zap'],
+            'electric': ['zap', 'plug', 'battery-charging'],
+            'physics': ['atom', 'magnet', 'globe'],
+            'chemist': ['flask', 'beaker', 'test-tube'],
+            'code': ['code', 'terminal', 'command']
+        };
+
+        async function performSearch() {
+            const term = inputs.name.value.trim().toLowerCase();
+            if (!term) return; 
+
+            // Si estamos buscando, ocultamos el botón de borrar imagen subida si existiera
+            inputs.upload.value = '';
+            inputs.clearUploadBtn.style.display = 'none';
+
+            resultsStrip.innerHTML = '<span style="font-size:11px; opacity:0.5; padding-left:10px;">Searching...</span>';
+
+            if (abortController) abortController.abort();
+            abortController = new AbortController();
+            const signal = abortController.signal;
+
+            let searchTerms = [term];
+            Object.keys(synonyms).forEach(key => {
+                if (term.includes(key) || (key.includes(term) && term.length > 2)) {
+                    searchTerms = [...searchTerms, ...synonyms[key]];
+                }
+            });
+            searchTerms = [...new Set(searchTerms)];
+
+            let resultsHTML = '';
+            let foundCount = 0;
+
+            try {
+                const iconifyUrl = `https://api.iconify.design/search?query=${term}&limit=20`;
+                const iconifyRes = await fetch(iconifyUrl, { signal });
+                const iconifyData = await iconifyRes.json();
+
+                if (iconifyData.icons) {
+                    for (const iconId of iconifyData.icons) {
+                        if (foundCount >= 10) break;
+                        const [prefix, name] = iconId.split(':');
+                        const svgUrl = `https://api.iconify.design/${prefix}/${name}.svg`;
+                        const res = await fetch(svgUrl, { signal });
+                        if (res.ok) {
+                            resultsHTML += createResultItem(await res.text());
+                            foundCount++;
+                        }
+                    }
+                }
+            } catch (err) { if (err.name !== 'AbortError') console.error(err); }
+
+            if (foundCount === 0) {
+                resultsStrip.innerHTML = '<span style="font-size:11px; opacity:0.5; color:#ff5555; padding-left:10px;">No results found.</span>';
+            } else {
+                resultsStrip.innerHTML = resultsHTML;
+                const items = document.querySelectorAll('.result-item');
+                items.forEach(item => {
+                    item.addEventListener('click', function() {
+                        document.querySelectorAll('.result-item').forEach(el => el.classList.remove('active'));
+                        this.classList.add('active');
+                        selectedSvgContent = this.querySelector('.svg-store').innerHTML;
+                        updateMainCanvas();
+                    });
+                });
+                if (items.length > 0) items[0].click();
+            }
+        }
+
+        function createResultItem(svg) {
+            const cleanSvg = svg.replace(/width=".*?"/, 'width="28"').replace(/height=".*?"/, 'height="28"');
+            return `<div class="result-item">${cleanSvg}<div class="svg-store" style="display:none">${svg}</div></div>`;
+        }
+
+        function updateMainCanvas() {
+            if (!selectedSvgContent) return;
+            updateUIPreviews();
+
+            const size = parseInt(inputs.size.value);
+            const iconColor = inputs.iconColor.value;
+            const iconFillMode = inputs.iconFill.value;
+            const iconStrokeWidth = inputs.iconStroke.value;
+            const shape = inputs.shape.value;
+            const contFillColor = inputs.contFillColor.value;
+            const contFillMode = inputs.contFillMode.value;
+            const contBorderColor = inputs.contBorderColor.value;
+            const contBorderWidth = parseFloat(inputs.contBorderWidth.value);
+
+            document.getElementById('size-val').textContent = size + "px";
+
+            let masterSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
+            
+            const cPad = contBorderWidth / 2;
+            const cSize = size - contBorderWidth; 
+            let containerFill = (contFillMode === 'solid') ? contFillColor : 'none';
+            let containerStroke = (contBorderWidth > 0) ? contBorderColor : 'none';
+
+            if (shape !== 'none') {
+                if (shape === 'circle') {
+                    masterSvg += `<circle cx="${size/2}" cy="${size/2}" r="${(size - contBorderWidth)/2}" fill="${containerFill}" stroke="${containerStroke}" stroke-width="${contBorderWidth}" />`;
+                } else if (shape === 'square') {
+                    masterSvg += `<rect x="${cPad}" y="${cPad}" width="${cSize}" height="${cSize}" fill="${containerFill}" stroke="${containerStroke}" stroke-width="${contBorderWidth}" />`;
+                } else if (shape === 'rounded') {
+                    masterSvg += `<rect x="${cPad}" y="${cPad}" width="${cSize}" height="${cSize}" rx="${size*0.2}" ry="${size*0.2}" fill="${containerFill}" stroke="${containerStroke}" stroke-width="${contBorderWidth}" />`;
+                }
+            }
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(selectedSvgContent, "image/svg+xml");
+            const iconSvg = doc.querySelector('svg');
+            
+            iconSvg.querySelectorAll('*').forEach(child => {
+                if (child.hasAttribute('fill') && child.getAttribute('fill') !== 'none') child.setAttribute('fill', 'currentColor');
+                if (child.hasAttribute('stroke') && child.getAttribute('stroke') !== 'none') child.setAttribute('stroke', 'currentColor');
+                child.style.fill = '';
+                child.style.stroke = '';
+            });
+
+            // LÓGICA DE CENTRADO CORREGIDA
+            const iconPadding = (shape !== 'none') ? size * 0.25 : size * 0.1; 
+            const iconDim = size - (iconPadding * 2);
+            
+            // Forzamos al SVG interno a ocupar estas dimensiones exactas y posición
+            iconSvg.setAttribute('width', iconDim);
+            iconSvg.setAttribute('height', iconDim);
+            iconSvg.setAttribute('x', iconPadding);
+            iconSvg.setAttribute('y', iconPadding);
+            // Aseguramos que preserve su relación de aspecto para no deformarse
+            iconSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+            const isStrokeBased = !iconSvg.innerHTML.includes('text') && (iconSvg.getAttribute('fill') === 'none' || !iconSvg.getAttribute('fill'));
+            
+            if (isStrokeBased) {
+                if (iconFillMode === 'filled') {
+                    iconSvg.style.fill = iconColor;
+                    iconSvg.style.stroke = 'none';
+                    iconSvg.querySelectorAll('*').forEach(el => { el.setAttribute('fill', iconColor); el.setAttribute('stroke', 'none'); });
+                } else {
+                    iconSvg.style.fill = 'none';
+                    iconSvg.style.stroke = iconColor;
+                    iconSvg.setAttribute('stroke-width', iconStrokeWidth);
+                    iconSvg.querySelectorAll('*').forEach(el => { el.setAttribute('stroke', iconColor); el.setAttribute('fill', 'none'); el.setAttribute('stroke-width', iconStrokeWidth); });
+                }
+            } else {
+                iconSvg.style.fill = iconColor;
+                iconSvg.querySelectorAll('path, circle, rect, polygon').forEach(el => {
+                    if (el.getAttribute('fill') !== 'none') {
+                        el.setAttribute('fill', iconColor);
+                    }
+                });
+            }
+
+            masterSvg += iconSvg.outerHTML + `</svg>`;
+            canvas.innerHTML = masterSvg;
+        }
+
+        function updateUIPreviews() {
+            document.getElementById('icon-color-disp').style.backgroundColor = inputs.iconColor.value;
+            document.getElementById('icon-color-code').textContent = inputs.iconColor.value.toUpperCase();
+            document.getElementById('cont-fill-disp').style.backgroundColor = inputs.contFillColor.value;
+            document.getElementById('cont-border-disp').style.backgroundColor = inputs.contBorderColor.value;
+            document.getElementById('container-controls').style.opacity = (inputs.shape.value !== 'none') ? '1' : '0.3';
+            document.getElementById('container-controls').style.pointerEvents = (inputs.shape.value !== 'none') ? 'auto' : 'none';
+        }
+
+        function downloadAsset() {
+            const svgEl = canvas.querySelector('svg');
+            if (!svgEl) return;
+            const name = inputs.name.value || 'asset';
+            const format = inputs.format.value;
+            const size = parseInt(inputs.size.value);
+            const svgData = new XMLSerializer().serializeToString(svgEl);
+
+            if (format === 'svg') {
+                const blob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
+                triggerDl(URL.createObjectURL(blob), `${name}.svg`);
+            } else {
+                const c = document.createElement('canvas');
+                c.width = size; c.height = size;
+                const ctx = c.getContext('2d');
+                const img = new Image();
+                const blob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
+                const url = URL.createObjectURL(blob);
+                img.onload = () => {
+                    ctx.clearRect(0,0,size,size);
+                    if (format === 'jpg') { ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,size,size); }
+                    ctx.drawImage(img,0,0);
+                    triggerDl(c.toDataURL(format === 'jpg' ? "image/jpeg" : `image/${format}`, 1.0), `${name}.${format}`);
+                };
+                img.src = url;
+            }
+        }
+
+        function triggerDl(url, name) {
+            const a = document.createElement('a');
+            a.href = url; a.download = name;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        inputs.name.addEventListener('input', () => {
+            clearTimeout(window.searchDebounce);
+            window.searchDebounce = setTimeout(performSearch, 400);
+        });
+
+        Object.values(inputs).forEach(el => { if(el) el.addEventListener('input', updateMainCanvas); });
+        performSearch();
+    </script>
+</body>
+</html>
