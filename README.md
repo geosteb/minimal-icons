@@ -17,7 +17,7 @@ Minimal Icons is a high-performance web tool for generating, customizing, and ve
 
 ### 🛠️ Tech Stack
 
-* **Frontend:** Vanilla JavaScript, HTML5, CSS3.
+* **Frontend:** Vanilla JavaScript, HTML5, CSS3. With AI-Assisted development.
 * **Engines:** [ImageTracer.js](https://github.com/joshua-gould/imagetracerjs) & Iconify API.
 * **Design:** Technical aesthetic using Rajdhani & Inter fonts.
 
