@@ -111,10 +111,11 @@
             overflow: hidden;
         }
 
-        .canvas-area svg {
+        /* Ajuste para que el SVG generado siempre se vea contenido en el preview */
+        .canvas-area > svg {
             filter: drop-shadow(0 0 15px rgba(0,0,0,0.6));
-            max-width: 80% !important; 
-            max-height: 80% !important;
+            max-width: 90%; 
+            max-height: 90%;
             width: auto !important;
             height: auto !important;
             transition: all 0.3s ease;
@@ -214,7 +215,6 @@
             width: 100%;
         }
 
-        /* Estilo para el input file y botón reset */
         .file-input-wrapper {
             display: flex;
             gap: 10px;
@@ -254,7 +254,7 @@
             height: 30px;
             cursor: pointer;
             font-weight: bold;
-            display: none; /* Oculto por defecto */
+            display: none;
             align-items: center;
             justify-content: center;
         }
@@ -277,8 +277,11 @@
         }
         .color-code { font-family: monospace; font-size: 0.75rem; opacity: 0.7; overflow: hidden; text-overflow: ellipsis; }
 
+        /* CORRECCIÓN DE LA ADVERTENCIA DE CSS */
         input[type="range"] {
-            -webkit-appearance: none; width: 100%; height: 4px;
+            appearance: none; /* Estándar */
+            -webkit-appearance: none; /* WebKit */
+            width: 100%; height: 4px;
             background: #333; border-radius: 2px; margin: 8px 0;
         }
         input[type="range"]::-webkit-slider-thumb {
@@ -366,6 +369,10 @@
                     <label>Stroke Width</label>
                     <input type="range" id="icon-stroke" min="0.5" max="4" step="0.1" value="1.5">
                 </div>
+                <div class="control-group">
+                    <label>Icon Scale (Inside Container)</label>
+                    <input type="range" id="icon-scale" min="10" max="95" step="1" value="65">
+                </div>
             </div>
 
             <div class="control-card">
@@ -440,6 +447,7 @@
             iconColor: document.getElementById('icon-color'),
             iconFill: document.getElementById('icon-fill'),
             iconStroke: document.getElementById('icon-stroke'),
+            iconScale: document.getElementById('icon-scale'), // Nuevo input
             shape: document.getElementById('icon-shape'),
             contFillColor: document.getElementById('cont-fill-color'),
             contBorderColor: document.getElementById('cont-border-color'),
@@ -454,14 +462,12 @@
         let selectedSvgContent = '';
         let abortController = null;
 
-        // --- SISTEMA DE VECTORIZACIÓN DE IMÁGENES ---
+        // --- SISTEMA DE VECTORIZACIÓN DE IMÁGENES CORREGIDO ---
         inputs.upload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Mostrar el botón de borrar
             inputs.clearUploadBtn.style.display = 'flex';
-
             canvas.innerHTML = '<span style="font-family:\'Rajdhani\'; opacity:0.5; animation: blink 1s infinite;">VECTORIZING...</span>';
             
             const reader = new FileReader();
@@ -472,41 +478,52 @@
                     pal: [{r:0,g:0,b:0,a:255}, {r:255,g:255,b:255,a:255}] 
                 };
 
-                // Dentro del listener de inputs.upload
-ImageTracer.imageToSVG(event.target.result, function(svgstr) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svgstr, "image/svg+xml");
-    const svg = doc.querySelector('svg');
+                ImageTracer.imageToSVG(event.target.result, function(svgstr) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgstr, "image/svg+xml");
+                    const svg = doc.querySelector('svg');
 
-    // Forzamos el centrado absoluto eliminando restricciones de origen
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    // Si la librería mete estilos de ancho/alto fijos en el estilo, los volamos
-    svg.style.width = "100%";
-    svg.style.height = "100%";
+                    // SOLUCIÓN AL PROBLEMA DE IMÁGENES GIGANTES:
+                    // 1. Obtenemos las dimensiones originales que ImageTracer detectó
+                    const w = svg.getAttribute('width');
+                    const h = svg.getAttribute('height');
 
-    svg.querySelectorAll('path').forEach(p => {
-        const fill = p.getAttribute('fill');
-        if (fill === 'rgb(255,255,255)' || fill === '#ffffff') {
-            p.setAttribute('fill', 'none');
-        } else {
-            p.setAttribute('fill', 'currentColor');
-        }
-    });
+                    // 2. Establecemos el viewBox para definir el "mundo" de coordenadas del SVG
+                    if (w && h) {
+                        svg.setAttribute('viewBox', `0 0 ${parseFloat(w)} ${parseFloat(h)}`);
+                    }
 
-    selectedSvgContent = svg.outerHTML;
-    updateMainCanvas();
-}, options);
+                    // 3. Borramos width/height fijos para permitir escalado responsivo
+                    svg.removeAttribute('width');
+                    svg.removeAttribute('height');
+                    
+                    // 4. Forzamos centrado y ajuste
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    svg.style.width = "100%";
+                    svg.style.height = "100%";
+
+                    // Limpieza de colores (blanco a transparente)
+                    svg.querySelectorAll('path').forEach(p => {
+                        const fill = p.getAttribute('fill');
+                        if (fill === 'rgb(255,255,255)' || fill === '#ffffff') {
+                            p.setAttribute('fill', 'none');
+                        } else {
+                            p.setAttribute('fill', 'currentColor');
+                        }
+                    });
+
+                    selectedSvgContent = svg.outerHTML;
+                    updateMainCanvas();
+                }, options);
             };
             reader.readAsDataURL(file);
         });
 
         // --- SISTEMA DE BORRADO DE IMAGEN ---
         inputs.clearUploadBtn.addEventListener('click', function() {
-            inputs.upload.value = ''; // Reset input file
-            inputs.clearUploadBtn.style.display = 'none'; // Ocultar boton X
-            selectedSvgContent = ''; // Limpiar SVG
-            
-            // Volver a estado inicial o buscar algo por defecto
+            inputs.upload.value = ''; 
+            inputs.clearUploadBtn.style.display = 'none'; 
+            selectedSvgContent = ''; 
             inputs.name.value = 'engineer';
             performSearch();
         });
@@ -526,10 +543,8 @@ ImageTracer.imageToSVG(event.target.result, function(svgstr) {
             const term = inputs.name.value.trim().toLowerCase();
             if (!term) return; 
 
-            // Si estamos buscando, ocultamos el botón de borrar imagen subida si existiera
             inputs.upload.value = '';
             inputs.clearUploadBtn.style.display = 'none';
-
             resultsStrip.innerHTML = '<span style="font-size:11px; opacity:0.5; padding-left:10px;">Searching...</span>';
 
             if (abortController) abortController.abort();
@@ -601,6 +616,9 @@ ImageTracer.imageToSVG(event.target.result, function(svgstr) {
             const contFillMode = inputs.contFillMode.value;
             const contBorderColor = inputs.contBorderColor.value;
             const contBorderWidth = parseFloat(inputs.contBorderWidth.value);
+            
+            // Nuevo valor de escala (de 10% a 95%)
+            const iconScale = parseInt(inputs.iconScale.value) / 100;
 
             document.getElementById('size-val').textContent = size + "px";
 
@@ -632,18 +650,23 @@ ImageTracer.imageToSVG(event.target.result, function(svgstr) {
                 child.style.stroke = '';
             });
 
-            // LÓGICA DE CENTRADO CORREGIDA
-            const iconPadding = (shape !== 'none') ? size * 0.25 : size * 0.1; 
-            const iconDim = size - (iconPadding * 2);
+            // LÓGICA DE CENTRADO Y ESCALADO DINÁMICO
+            // Calculamos el espacio máximo disponible (restando bordes del contenedor)
+            const maxAvailableSize = size - (contBorderWidth * 2);
             
-            // Forzamos al SVG interno a ocupar estas dimensiones exactas y posición
+            // Calculamos el tamaño real del icono basado en el slider de escala
+            const iconDim = maxAvailableSize * iconScale;
+            
+            // Calculamos el offset para centrarlo
+            const offset = (size - iconDim) / 2;
+            
             iconSvg.setAttribute('width', iconDim);
             iconSvg.setAttribute('height', iconDim);
-            iconSvg.setAttribute('x', iconPadding);
-            iconSvg.setAttribute('y', iconPadding);
-            // Aseguramos que preserve su relación de aspecto para no deformarse
+            iconSvg.setAttribute('x', offset);
+            iconSvg.setAttribute('y', offset);
             iconSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
+            // ... Estilos de color (igual que antes) ...
             const isStrokeBased = !iconSvg.innerHTML.includes('text') && (iconSvg.getAttribute('fill') === 'none' || !iconSvg.getAttribute('fill'));
             
             if (isStrokeBased) {
@@ -675,6 +698,9 @@ ImageTracer.imageToSVG(event.target.result, function(svgstr) {
             document.getElementById('icon-color-code').textContent = inputs.iconColor.value.toUpperCase();
             document.getElementById('cont-fill-disp').style.backgroundColor = inputs.contFillColor.value;
             document.getElementById('cont-border-disp').style.backgroundColor = inputs.contBorderColor.value;
+            // Quitamos la restricción de opacidad para que se pueda editar el contenedor siempre, 
+            // pero si es 'none' el shape, los inputs siguen funcionando (aunque no se vea el shape).
+            // Si prefieres bloquearlo visualmente:
             document.getElementById('container-controls').style.opacity = (inputs.shape.value !== 'none') ? '1' : '0.3';
             document.getElementById('container-controls').style.pointerEvents = (inputs.shape.value !== 'none') ? 'auto' : 'none';
         }
